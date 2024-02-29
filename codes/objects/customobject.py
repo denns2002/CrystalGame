@@ -82,14 +82,14 @@ class CustomObject(pygame.sprite.Sprite):
             self.collision_image = pygame.transform.scale(  # меняю размер дерева
                 collision_image, (self.collision.height, self.collision.width)
             )
-        # if self.hitbox:
-        #     path = f'{SPRITES_FOLDER}hitbox.png'
-        #     hitbox_image = pygame.image.load(path)
-        #     self.hitbox_image = pygame.transform.scale(
-        #         # меняю размер дерева
-        #         hitbox_image, (self.hitbox.height, self.hitbox.width)
-        #     )
-
+    
+    # def check_collision(self, obj): !!!!!!!!!!!!!!!!!
+    #     #  если объект пересекается или выше
+    #     return obj.sprite.top < self.sprite.centery < obj.sprite.bottom \
+    #            and obj.sprite.left < self.sprite.centerx < obj.sprite.right \
+    #            and obj.z >= self.z \
+    #            and obj is not self
+    #
 
 
 

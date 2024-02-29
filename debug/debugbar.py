@@ -1,5 +1,7 @@
 import pygame
 
+from project_settings import DEBUG
+
 pygame.init()
 font = pygame.font.Font(None, 30)
 
@@ -16,9 +18,10 @@ def show_debugbar(info, pos_x: int = 0, pox_y: int = 0) -> None:
     :param pos_x: столбец позиции
     :param pox_y: строки позиции
     """
-    screen = pygame.display.get_surface()
-    debug_surf = font.render(str(info), True, "White")
-    debug_rect = debug_surf.get_rect(topleft=(pos_x*150, pox_y*40))
-    pygame.draw.rect(screen, 'Black', debug_rect)
+    if DEBUG:
+        screen = pygame.display.get_surface()
+        debug_surf = font.render(str(info), True, "White")
+        debug_rect = debug_surf.get_rect(topleft=(pos_x*150, pox_y*40))
+        pygame.draw.rect(screen, 'Black', debug_rect)
 
-    screen.blit(debug_surf, debug_rect)
+        screen.blit(debug_surf, debug_rect)

@@ -29,6 +29,6 @@ class GreenTree(CustomObject):
         self.collision.bottom += sprite_size - collision_size
         self.collision.right += (sprite_size - collision_size) // 2
 
-        if DEBUG_BOXES:
+        if DEBUG:
             self.create_debug_boxes()
 

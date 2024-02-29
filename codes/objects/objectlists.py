@@ -19,6 +19,4 @@ objects = {
 
 
 def find_object(name: str = 'not_found'):
-    print(name)
-    print(objects[name] if name in objects else objects['not_found'])
     return objects[name] if name in objects else objects['not_found']

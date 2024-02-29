@@ -14,5 +14,5 @@ SETTINGS_FOLDER = 'settings/'
 SETTINGS_FILE = 'game_settings'
 
 SPRITES_FOLDER = 'assets/'
-DEBUG_BOXES = False
+DEBUG = True
 

@@ -28,9 +28,9 @@ class Player(CustomObject):
         self.c_group = c_group
 
         # STATS
-        self.speed = 3
+        self.speed = 10
 
-        if DEBUG_BOXES:
+        if DEBUG:
             self.create_debug_boxes()
 
     def rotate(self, x, y):

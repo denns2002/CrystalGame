@@ -26,7 +26,6 @@ class Game:
         self.level = Level()
 
     def run(self):
-        # run_mainmenu(self.screen)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
