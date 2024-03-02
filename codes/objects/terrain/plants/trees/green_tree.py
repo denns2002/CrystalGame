@@ -3,7 +3,7 @@ from random import uniform
 import pygame
 
 from codes.objects.customobject import CustomObject
-from project_settings import *
+from settings.settings import *
 
 
 class GreenTree(CustomObject):

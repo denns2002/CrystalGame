@@ -1,6 +1,6 @@
 import pygame
 
-from project_settings import DEBUG
+from settings.settings import *
 
 pygame.init()
 font = pygame.font.Font(None, 30)

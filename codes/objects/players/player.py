@@ -2,8 +2,9 @@ import math
 
 import pygame.sprite
 
+from codes import spritesheet
 from codes.objects.customobject import CustomObject
-from project_settings import *
+from settings.settings import *
 
 
 class Player(CustomObject):
@@ -20,28 +21,30 @@ class Player(CustomObject):
         self.original_image = self.image.copy()
 
         self.collision = self.sprite.copy()
-        # self.collision.x += self.collision.height
-        # self.collision.height = 1
         self.hitbox = self.collision.copy()
 
         self.direction = pygame.math.Vector2()
         self.c_group = c_group
 
         # STATS
-        self.speed = 10
+        self.speed = 5
+
+        self.init_animations()
 
         if DEBUG:
             self.create_debug_boxes()
 
-    def rotate(self, x, y):
-        self.image = pygame.transform.rotate(
-            self.original_image, math.degrees(
-                math.atan2(x - self.sprite.x, y - self.sprite.y)
-                )
-            )
-        self.sprite = self.image.get_rect(center=self.sprite.center)
-        # new_rect = rotated_image.get_rect(center=self.sprite.center)
-        # pygame.display.get_surface().blit(rotated_image, new_rect.topleft)
+    def init_animations(self):
+        self.animations: dict = {
+            'now': None,
+            'frame': 0,
+            'last_update': pygame.time.get_ticks()
+        }
+        idle_path = f'{SPRITES_FOLDER}objects/players/player_idle_spritesheet.png'
+        run_path = f'{SPRITES_FOLDER}objects/players/player_run_spritesheet.png'
+        self.add_anim('idle', 5, idle_path, 2)
+        self.add_anim('run', 5, run_path, 2)
+        self.animations['now'] = 'idle'
 
     def input(self) -> None:
         """
@@ -54,15 +57,27 @@ class Player(CustomObject):
             self.direction.y = -1
         elif keys[pygame.K_s]:
             self.direction.y = 1
-        else:
-            self.direction.y = 0
 
         if keys[pygame.K_a]:
             self.direction.x = -1
         elif keys[pygame.K_d]:
             self.direction.x = 1
-        else:
+
+        if not keys[pygame.K_w] and not keys[pygame.K_s]:
+            self.direction.y = 0
+        if not keys[pygame.K_a] and not keys[pygame.K_d]:
             self.direction.x = 0
+
+        if any([
+            keys[pygame.K_w],
+            keys[pygame.K_s],
+            keys[pygame.K_a],
+            keys[pygame.K_d]
+        ]):
+            self.start_anim('run')
+        else:
+            self.start_anim('idle')
+
 
     def move(self, speed: int) -> None:
         """

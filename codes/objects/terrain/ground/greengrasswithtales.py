@@ -1,10 +1,5 @@
-import os
-from random import randint, uniform
-
-import pygame
-
 from codes.objects.customobject import CustomObject
-from project_settings import *
+from settings.settings import *
 
 
 class GreenGrassWithTales(CustomObject):

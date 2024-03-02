@@ -4,7 +4,7 @@ from codes.levels.map import *
 from codes.objects.customobject import CustomObject
 from codes.objects.objectlists import find_object
 from debug.debugbar import show_debugbar
-from project_settings import *
+from settings.settings import *
 
 
 class Level:
@@ -72,21 +72,29 @@ class VisibleObjectsGroup(pygame.sprite.Group):
         self.offset.x = player.sprite.centerx - self.half_width
         self.offset.y = player.sprite.centery - self.half_height
 
-        pos = pygame.mouse.get_pos() + self.offset
-        player.rotate(*pos)
-
         for i in range(self.floors_count):
-            for obj in self.obj_floors[i]:
+            for obj in sorted(self.obj_floors[i], key=lambda obj: obj.sprite.bottom):
                 offset_pos = obj.sprite.topleft - self.offset
 
                 if self.check_obj_in_screen(obj, offset_pos):
                     self.do_tranpanent_obj(player, obj)
-                    self.screen.blit(obj.image, offset_pos)
-
+                    if obj.animations:
+                        self.do_animation(obj)
+                        self.screen.blit(
+                            obj.animations[obj.animations['now']]
+                            ['sprite_sheet']
+                            [obj.animations['frame']],
+                            offset_pos
+                        )
+                    else:
+                        self.screen.blit(obj.image, offset_pos)
                     # if 'collision_image' in obj.__dict__:
                     #     self.screen.blit(obj.collision_image, obj.collision.topleft - self.offset)
 
     def check_obj_in_screen(self, obj, offset_pos) -> bool:
+        """
+        Проверяет в экране ли объект
+        """
         scr_rect = self.screen.get_rect()
 
         return scr_rect.left <= offset_pos[0] + obj.sprite.width \
@@ -99,15 +107,27 @@ class VisibleObjectsGroup(pygame.sprite.Group):
         """
         Сделает объект перед и над игроком прозрачным
         """
-        tran_alpha = 50
+        trans_alpha = 50
         full_alpha = 255
 
-        if obj.image.get_alpha() == full_alpha:
-            if obj.sprite.top < player.sprite.centery < obj.sprite.bottom \
-                    and obj.sprite.left < player.sprite.centerx < obj.sprite.right \
-                    and obj.z >= player.z \
-                    and obj is not player:
-                obj.image.set_alpha(tran_alpha)
+        if obj.sprite.top < player.sprite.centery < obj.sprite.bottom \
+                and obj.sprite.left < player.sprite.centerx < obj.sprite.right \
+                and obj.z >= player.z \
+                and obj is not player:
+            obj.image.set_alpha(trans_alpha)
 
-        elif obj.image.get_alpha() == tran_alpha:
+        else:
             obj.image.set_alpha(full_alpha)
+
+    @staticmethod
+    def do_animation(obj: CustomObject):
+        current_time = pygame.time.get_ticks()
+        if current_time - obj.animations['last_update'] \
+                >= obj.animations[obj.animations['now']]['cooldown']:
+            obj.animations['frame'] += 1
+            obj.animations['last_update'] = current_time
+
+            if obj.animations['frame'] >= len(
+                    obj.animations[obj.animations['now']]['sprite_sheet']
+                    ):
+                obj.animations['frame'] = 0

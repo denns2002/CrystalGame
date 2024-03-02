@@ -4,7 +4,8 @@ from random import randint
 import pygame
 from pygame import Surface, Rect
 
-from project_settings import *
+from codes import spritesheet
+from settings.settings import *
 
 
 class CustomObject(pygame.sprite.Sprite):
@@ -28,6 +29,7 @@ class CustomObject(pygame.sprite.Sprite):
     hitbox: Rect = None  # квадрат урона
     visual: bool = True  # видимый объект
     interactive: bool = False  # есть ли взаимодействие
+    move = False
 
     def __init__(self,
                  pos,
@@ -50,6 +52,7 @@ class CustomObject(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(image, (TILESIZE, TILESIZE))
         self.sprite = self.image.get_rect(topleft=pos)
         self.hitbox = self.sprite.inflate(0, 0)
+        self.animations = {}
 
     def random_image(self, image_path: str) -> None:
         """
@@ -82,16 +85,42 @@ class CustomObject(pygame.sprite.Sprite):
             self.collision_image = pygame.transform.scale(  # меняю размер дерева
                 collision_image, (self.collision.height, self.collision.width)
             )
-    
-    # def check_collision(self, obj): !!!!!!!!!!!!!!!!!
-    #     #  если объект пересекается или выше
-    #     return obj.sprite.top < self.sprite.centery < obj.sprite.bottom \
-    #            and obj.sprite.left < self.sprite.centerx < obj.sprite.right \
-    #            and obj.z >= self.z \
-    #            and obj is not self
-    #
 
+    @staticmethod
+    def set_spritesheet(self, path):
+        sprite_sheet_image = pygame.image.load(path).convert_alpha()
 
+        return spritesheet.SpriteSheet(sprite_sheet_image)
+
+    def add_anim(self,
+                 name: str,
+                 frames: int,
+                 spitesheet_path: str,
+                 scale: int = 1,
+                 cooldown: int = 255,
+                 color: tuple | str = (155, 155, 155)):
+
+        sprite_sheet_image = pygame.image.load(spitesheet_path)
+        sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
+        width, height = sprite_sheet_image.get_size()
+        width = width // frames
+
+        step_counter = 0
+        temp_img_list = []
+        for _ in range(frames):
+            temp_img_list.append(sprite_sheet.get_image(
+                step_counter, height, width, scale, color))
+            step_counter += 1
+
+        self.animations[name] = {}
+        self.animations[name]['sprite_sheet'] = temp_img_list
+        self.animations[name]['cooldown'] = cooldown
+
+    def start_anim(self, name: str, frame: int = 0):
+        if self.animations['now'] != name:
+            self.animations['now'] = name
+            self.animations['frame'] = frame
+            self.animations['last_update'] = pygame.time.get_ticks()
 
 
 

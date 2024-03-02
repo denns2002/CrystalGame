@@ -3,14 +3,13 @@ import sys
 import pygame
 
 from codes.levels.level import Level
-from project_settings import *
-from settings.settings import Settings
+from settings.settings import *
 
 
 class Game:
     """
       ███████████████████████
-     █              CRYSTAL              █
+     █             CRYSTAL            █
     ███████████████████████
     """
 
