@@ -4,6 +4,7 @@ import pygame.sprite
 
 from codes import spritesheet
 from codes.objects.customobject import CustomObject
+from debug.checksrpites import CheckSprites
 from settings.settings import *
 
 
@@ -20,6 +21,7 @@ class Player(CustomObject):
         self.sprite = self.image.get_rect(topleft=pos)
         self.original_image = self.image.copy()
 
+        # TODO: поменять коллизию персонажа
         self.collision = self.sprite.copy()
         self.hitbox = self.collision.copy()
 
@@ -38,12 +40,13 @@ class Player(CustomObject):
         self.animations: dict = {
             'now': None,
             'frame': 0,
-            'last_update': pygame.time.get_ticks()
+            'last_update': pygame.time.get_ticks(),
+            'side': 1
         }
         idle_path = f'{SPRITES_FOLDER}objects/players/player_idle_spritesheet.png'
         run_path = f'{SPRITES_FOLDER}objects/players/player_run_spritesheet.png'
-        self.add_anim('idle', 5, idle_path, 2)
-        self.add_anim('run', 5, run_path, 2)
+        self.add_anim('idle', 5, idle_path, 2, two_sides=True)
+        self.add_anim('run', 5, run_path, 2, two_sides=True)
         self.animations['now'] = 'idle'
 
     def input(self) -> None:
@@ -68,17 +71,6 @@ class Player(CustomObject):
         if not keys[pygame.K_a] and not keys[pygame.K_d]:
             self.direction.x = 0
 
-        if any([
-            keys[pygame.K_w],
-            keys[pygame.K_s],
-            keys[pygame.K_a],
-            keys[pygame.K_d]
-        ]):
-            self.start_anim('run')
-        else:
-            self.start_anim('idle')
-
-
     def move(self, speed: int) -> None:
         """
         Позволяет передвигать героя
@@ -96,6 +88,22 @@ class Player(CustomObject):
         self.collision.y += self.direction.y * speed
         self.check_collision('y')
         self.sprite.center = self.collision.center
+
+    def run_anim(self):
+        keys = pygame.key.get_pressed()
+
+        # TODO: поворот в сторону бега
+        if any([keys[pygame.K_w],
+                keys[pygame.K_s],
+                keys[pygame.K_a],
+                keys[pygame.K_d]]):
+            if keys[pygame.K_a]:
+                self.animations['side'] = 0
+            self.start_anim('run')
+        else:
+            self.start_anim('idle')
+
+        print(self.animations)
 
     def check_collision(self, direction) -> None:
         """
@@ -121,3 +129,4 @@ class Player(CustomObject):
     def update(self) -> None:
         self.input()
         self.move(self.speed)
+        self.run_anim()

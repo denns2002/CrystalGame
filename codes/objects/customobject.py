@@ -97,24 +97,30 @@ class CustomObject(pygame.sprite.Sprite):
                  frames: int,
                  spitesheet_path: str,
                  scale: int = 1,
+                 flip_x: bool = False,
+                 flip_y: bool = False,
                  cooldown: int = 255,
-                 color: tuple | str = (155, 155, 155)):
+                 color: tuple | str = (155, 155, 155),
+                 two_sides: bool = False):
+
+        self.animations[name] = {}
+        self.animations[name]['cooldown'] = cooldown
+        self.animations[name]['sprite_sheet'] = []
 
         sprite_sheet_image = pygame.image.load(spitesheet_path)
         sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
         width, height = sprite_sheet_image.get_size()
         width = width // frames
 
-        step_counter = 0
-        temp_img_list = []
-        for _ in range(frames):
-            temp_img_list.append(sprite_sheet.get_image(
-                step_counter, height, width, scale, color))
-            step_counter += 1
-
-        self.animations[name] = {}
-        self.animations[name]['sprite_sheet'] = temp_img_list
-        self.animations[name]['cooldown'] = cooldown
+        for i in range(flip_x, two_sides + 1):
+            temp_img_list = []
+            step_counter = 0
+            for _ in range(frames):
+                image = sprite_sheet.get_image(step_counter, width, height, scale,
+                                               color, bool(i), flip_y)
+                temp_img_list.append(image)
+                step_counter += 1
+            self.animations[name]['sprite_sheet'].append(temp_img_list)
 
     def start_anim(self, name: str, frame: int = 0):
         if self.animations['now'] != name:

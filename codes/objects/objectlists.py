@@ -3,6 +3,7 @@
  █          OBJECTS LIST          █
 ███████████████████████
 """
+from codes.objects.animals.duck import Duck
 from codes.objects.customobject import CustomObject
 from codes.objects.players.player import Player
 from codes.objects.terrain.ground.greengrasswithtales import GreenGrassWithTales
@@ -13,6 +14,7 @@ objects = {
     'player': Player,
     'green_tree': GreenTree,
     'green_grass_with_tales': GreenGrassWithTales,
+    'duck': Duck,
     '': None,
     # 'wall': Wall,
 }

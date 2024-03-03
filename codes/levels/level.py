@@ -3,6 +3,7 @@ import pygame
 from codes.levels.map import *
 from codes.objects.customobject import CustomObject
 from codes.objects.objectlists import find_object
+from debug.checksrpites import CheckSprites
 from debug.debugbar import show_debugbar
 from settings.settings import *
 
@@ -75,6 +76,12 @@ class VisibleObjectsGroup(pygame.sprite.Group):
         for i in range(self.floors_count):
             for obj in sorted(self.obj_floors[i], key=lambda obj: obj.sprite.bottom):
                 offset_pos = obj.sprite.topleft - self.offset
+                mouse_pos = pygame.mouse.get_pos() + self.offset
+
+                if mouse_pos[0] > player.sprite.centerx:
+                    player.animations['side'] = 0
+                else:
+                    player.animations['side'] = 1
 
                 if self.check_obj_in_screen(obj, offset_pos):
                     self.do_tranpanent_obj(player, obj)
@@ -82,12 +89,13 @@ class VisibleObjectsGroup(pygame.sprite.Group):
                         self.do_animation(obj)
                         self.screen.blit(
                             obj.animations[obj.animations['now']]
-                            ['sprite_sheet']
+                            ['sprite_sheet'][obj.animations['side']]
                             [obj.animations['frame']],
                             offset_pos
                         )
                     else:
                         self.screen.blit(obj.image, offset_pos)
+
                     # if 'collision_image' in obj.__dict__:
                     #     self.screen.blit(obj.collision_image, obj.collision.topleft - self.offset)
 
@@ -128,6 +136,6 @@ class VisibleObjectsGroup(pygame.sprite.Group):
             obj.animations['last_update'] = current_time
 
             if obj.animations['frame'] >= len(
-                    obj.animations[obj.animations['now']]['sprite_sheet']
+                    obj.animations[obj.animations['now']]['sprite_sheet'][obj.animations['side']]
                     ):
                 obj.animations['frame'] = 0
