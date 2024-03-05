@@ -1,18 +1,19 @@
 import math
+from random import randint
 
 import pygame.sprite
 
-from codes import spritesheet
-from codes.objects.customobject import CustomObject
-from debug.checksrpites import CheckSprites
+from codes.objects.customobject import EntityObject
 from settings.settings import *
 
 
-class Duck(CustomObject):
+class Duck(EntityObject):
+
     def __init__(self, pos, z, groups):
         super().__init__(pos, z, groups)
         self.visual = True
         self.position = pos
+        self.entity_collision = False
 
         self.image = pygame.image.load(  # спрайт игрока
             SPRITES_FOLDER + 'arrow.png'
@@ -27,7 +28,7 @@ class Duck(CustomObject):
         self.direction = pygame.math.Vector2()
 
         # STATS
-        self.speed = 5
+        self.speed = 10
 
         self.init_animations()
 
@@ -39,11 +40,26 @@ class Duck(CustomObject):
             'now': None,
             'frame': 0,
             'last_update': pygame.time.get_ticks(),
-            'side': 0
+            'side': 1
         }
 
         run_path = f'{SPRITES_FOLDER}objects/animals/duck/duck_run_spritesheet.png'
-        self.add_anim('run', 4, run_path, 1)
+        self.add_anim('run', 4, run_path, 1, two_sides=True)
         self.animations['now'] = 'run'
-        self.start_anim('run')
+        self.run_anim('run')
 
+    def random_side(self):
+        if randint(0, 1):
+            if randint(0, 1):
+                self.direction.x += 1
+            else:
+                self.direction.x -= 1
+        else:
+            if randint(0, 1):
+                self.direction.y += 1
+            else:
+                self.direction.y -= 1
+
+    def update(self) -> None:
+        self.random_side()
+        self.move(self.speed)

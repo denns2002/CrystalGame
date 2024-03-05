@@ -2,18 +2,18 @@ from random import uniform
 
 import pygame
 
-from codes.objects.customobject import CustomObject
+from codes.objects.customobject import CustomObject, CollisionObject
 from settings.settings import *
 
 
-class GreenTree(CustomObject):
+class GreenTree(CollisionObject):
     interactive = True
 
     def __init__(self, pos, z, groups):
         super().__init__(pos, z, groups)
 
         folder = f'{SPRITES_FOLDER}terrain/plants/green_tree/'
-        self.random_image(f'{folder}green_tree')  # загрузка спрайта
+        self.get_random_static_image(f'{folder}green_tree')  # загрузка спрайта
 
         factor = uniform(0.7, 1.3)  # множитель размера
         sprite_size = 2 * TILESIZE * factor  # случайный размер дерева

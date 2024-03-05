@@ -70,7 +70,7 @@ class Settings:
                 elif line[0] == '#':  # комментарий или заголовок
                     continue
 
-                dct[line[:line.find('=')]] = line[line.find('=') + 1:]
+                dct[line[:line.find('=')]] = line[line.find('=') + 1:].rstrip()
 
             return dct
 

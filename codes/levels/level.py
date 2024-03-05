@@ -1,6 +1,7 @@
 import pygame
 
 from codes.levels.map import *
+from codes.objects.animals.duck import Duck
 from codes.objects.customobject import CustomObject
 from codes.objects.objectlists import find_object
 from debug.checksrpites import CheckSprites
@@ -13,6 +14,11 @@ class Level:
         self.screen = pygame.display.get_surface()
         self.v_group = VisibleObjectsGroup()  # Видимые объекты
         self.c_group = pygame.sprite.Group()  # Объекты с коллизией
+        self.groups = {
+            'visible': self.v_group,  # Видимые объекты
+            'collision': self.c_group,  # Объекты с коллизией
+            # 'hitbox' :
+        }
         self.player = None
         self.clock = pygame.time.Clock()
         self.create_map()
@@ -30,16 +36,11 @@ class Level:
 
                     if col == 'player':
                         self.player = obj = find_object(col)(
-                            (x, y), floor_i, [self.v_group], self.c_group
+                            (x, y), floor_i, self.groups
                         )
                     elif col:
                         obj = find_object(col)
-                        if obj.visual and obj.interactive:
-                            obj = obj((x, y), floor_i, [self.v_group, self.c_group])
-                        elif obj.visual:
-                            obj = obj((x, y), floor_i, [self.v_group])
-                        elif obj.interactive:
-                            obj = obj((x, y), floor_i, [self.c_group])
+                        obj = obj((x, y), floor_i, self.groups)
                         obj.image.convert(24)
 
                     self.v_group.obj_floors[floor_i].append(obj)
@@ -82,6 +83,12 @@ class VisibleObjectsGroup(pygame.sprite.Group):
                     player.animations['side'] = 0
                 else:
                     player.animations['side'] = 1
+
+                if isinstance(obj, Duck):
+                    if mouse_pos[0] > player.sprite.centerx:
+                        obj.animations['side'] = 0
+                    else:
+                        obj.animations['side'] = 1
 
                 if self.check_obj_in_screen(obj, offset_pos):
                     self.do_tranpanent_obj(player, obj)

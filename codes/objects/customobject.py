@@ -1,5 +1,6 @@
 import os
 from random import randint
+from typing import List, Tuple
 
 import pygame
 from pygame import Surface, Rect
@@ -27,36 +28,35 @@ class CustomObject(pygame.sprite.Sprite):
     sprite: Rect = None  # квадрат, в которм картинка
     collision: Rect = None  # квадрат столкновения
     hitbox: Rect = None  # квадрат урона
-    visual: bool = True  # видимый объект
-    interactive: bool = False  # есть ли взаимодействие
-    move = False
+    visible: bool = True  # видимый объект
 
     def __init__(self,
                  pos,
                  z,
-                 groups,
-                 image_path=f'{SPRITES_FOLDER}notfound.png',
-                 folder=SPRITES_FOLDER):
+                 groups_dict: dict,
+                 image_path=f'{SPRITES_FOLDER}notfound.png'):
+        super().__init__()
 
-        super().__init__(groups)
+        self.add(groups_dict['visible'])
+        self.z = z
+        self.groups = groups_dict
 
         """
         Если оъекта нет в словаре объектов, то будет создаваться этот
         объект без коллизии, без хитбокса и с текстурой "NotFound".
         Если у объекта много вариантов текстур и конкретный выбор не важен, то
-        использовать функцию random_image.
+        использовать функцию get_random_static_image.
         """
-        self.z = z
-        
         image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(image, (TILESIZE, TILESIZE))
         self.sprite = self.image.get_rect(topleft=pos)
         self.hitbox = self.sprite.inflate(0, 0)
         self.animations = {}
 
-    def random_image(self, image_path: str) -> None:
+    def get_random_static_image(self, image_path: str) -> None:
         """
-        Случайный спрайт, независимо от кол-ва спрайтов.
+        Случайный спрайт/таблица, независимо от кол-ва спрайтов.
+        Динамические вариации, например, для анимаций, вызывать не тут!
 
         Пример image_path:\n
         "assets/terrain/plants/trees/green_tree/green_tree"\n
@@ -77,14 +77,6 @@ class CustomObject(pygame.sprite.Sprite):
 
     def upscale_image_to_tale(self):
         self.image = pygame.transform.scale(self.image, (TILESIZE, TILESIZE))
-
-    def create_debug_boxes(self):
-        if self.collision:
-            path = f'{SPRITES_FOLDER}collision.png'
-            collision_image = pygame.image.load(path)
-            self.collision_image = pygame.transform.scale(  # меняю размер дерева
-                collision_image, (self.collision.height, self.collision.width)
-            )
 
     @staticmethod
     def set_spritesheet(self, path):
@@ -122,15 +114,102 @@ class CustomObject(pygame.sprite.Sprite):
                 step_counter += 1
             self.animations[name]['sprite_sheet'].append(temp_img_list)
 
-    def start_anim(self, name: str, frame: int = 0):
+    def run_anim(self, name: str, frame: int = 0):
+        """Запускает анимацию"""
+
         if self.animations['now'] != name:
             self.animations['now'] = name
             self.animations['frame'] = frame
             self.animations['last_update'] = pygame.time.get_ticks()
 
 
+class CollisionObject(CustomObject):
+
+    def __init__(self, pos, z, groups_dict,
+                 image_path=f'{SPRITES_FOLDER}notfound.png'):
+
+        super().__init__(pos, z, groups_dict, image_path)
+        self.add(groups_dict['collision'])
+        self.collision = self.sprite.copy()
+        self.has_collision = True
+
+        self.create_debug_boxes()
+
+    def create_debug_boxes(self):
+        if self.collision:
+            path = f'{SPRITES_FOLDER}collision.png'
+            collision_image = pygame.image.load(path)
+            self.collision_image = pygame.transform.scale(  # меняю размер дерева
+                collision_image, (self.collision.height, self.collision.width)
+            )
 
 
+class EntityObject(CollisionObject):
+    def __init__(self, pos, z, groups_dict,
+                 image_path=f'{SPRITES_FOLDER}notfound.png'):
 
+        super().__init__(pos, z, groups_dict, image_path)
+        self.direction = pygame.math.Vector2()
+        self.entity_collision = True
 
+    def move(self, speed: int) -> None:
+        """
+        Позволяет передвигать объект
+        :param speed: скорость
+        """
 
+        # Если объект двигается по диагонали, то его скорость быстрее, чем по
+        # движение по осям, эти две строки фиксят этот баг
+        if self.direction.magnitude():
+            self.direction = self.direction.normalize()
+
+        # перемещение, зависящие от скорости
+        self.collision.x += self.direction.x * speed
+        self.check_collision('x', self.groups['collision'])
+        self.collision.y += self.direction.y * speed
+        self.check_collision('y', self.groups['collision'])
+        self.sprite.center = self.collision.center
+
+    def check_collision(self, direction: str,
+                        collision_group: pygame.sprite.Group) -> None:
+        """
+        Проверяет, столкнулся ли объект с другим с объектом с коллизией
+        нужен direction!
+
+        :param direction: направление
+        :param collision_group: группа объектов с коллизией
+        """
+
+        def is_ghost(obj):
+            ghost_bool = 'has_collision' in obj.__dict__ \
+                         and (not self.has_collision or not obj.has_collision)
+
+            entity_bool = 'entity_collision' in obj.__dict__ \
+                          and (not self.entity_collision or not obj.entity_collision)
+            return ghost_bool or entity_bool
+
+        if direction == 'x':
+            for obj in collision_group:
+
+                if obj == self:
+                    continue
+
+                if obj.collision.colliderect(self.collision) and not is_ghost(obj):
+
+                    if self.direction.x > 0:  # движение направо
+                        # Чтобы спрайт игрока не входил в объектd
+                        self.collision.right = obj.collision.left
+                    if self.direction.x < 0:  # движение налево
+                        self.collision.left = obj.collision.right
+
+        if direction == 'y':
+            for obj in collision_group:
+
+                if obj == self:
+                    continue
+
+                if obj.collision.colliderect(self.collision) and not is_ghost(obj):
+                    if self.direction.y > 0:  # движение вниз
+                        self.collision.bottom = obj.collision.top
+                    if self.direction.y < 0:  # движение ввех
+                        self.collision.top = obj.collision.bottom

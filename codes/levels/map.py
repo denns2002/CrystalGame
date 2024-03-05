@@ -29,12 +29,6 @@ MAP = [
         [d,d,d,d,d,d,d,d,d,d,]*5,
         [d,d,d,d,d,d,d,d,d,d,]*5,
         [d,d,d,d,d,d,d,d,d,d,]*5,
-        [d,d,d,d,d,d,d,d,d,d,]*5,
-        [d,d,d,d,d,d,d,d,d,d,]*5,
-        [d,d,d,d,d,d,d,d,d,d,]*5,
-        [d,d,d,d,d,d,d,d,d,d,]*5,
-        [d,d,d,d,d,d,d,d,d,d,]*5,
-        [d,d,d,d,d,d,d,d,d,d,]*5,
         [_,_,_,d,_,_,_,_,_,_,]*5,
     ],
     [[],[],[_,_,_,_,_,_,g]]
